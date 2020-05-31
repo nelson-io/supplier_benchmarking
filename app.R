@@ -1,11 +1,6 @@
 
 library(shiny)
-library(dplyr)
-library(janitor)
-library(ggplot2)
-library(rio)
-library(purrr)
-library(stringr)
+library(tidyverse)
 
 # Define UI for application that draws a histogram
 ui <- fluidPage(
@@ -33,7 +28,7 @@ ui <- fluidPage(
             tabsetPanel(
                 tabPanel("Introducción", 
                          p(""),
-                         p("The goal of this app is to use data from your suppliers to estimate flexible indexes. It lets you adjust the relative importance of every feature and automatically standardize features (substracting the mean and dividing by the standard deviation of each variable) in order to make them comparable. The obtained score corresponds to the weighted sum of standardized attributes. It's open source and all the files are hosted on my github. Here is a sample .xlsx file to try the app"),
+                         p("The goal of this app is to use data from your suppliers to estimate flexible indexes. It lets you adjust the relative importance of every feature and automatically standardize features (substracting the mean and dividing by the standard deviation of each variable) in order to make them comparable. The obtained score corresponds to the weighted sum of standardized attributes. It's open source and all the files are hosted on ", a("my github.", href = "https://github.com/nelson-io/supplier_benchmarking")),
                          h4(strong("Input file")),
                          p("Choose a file from your system with suppliers data. \n Each column must be an attribute and the first column", strong("MUST"), " contain supplier names (or id's)."),
                          h4(strong("Sliders")),
@@ -41,7 +36,11 @@ ui <- fluidPage(
                          h4(strong("Tabs")),
                          p(code("Score"), "- This tab shows with a barplot the standardized scores obtained by each supplier. It also shows the weight of every variable (which depends on the relative importance of each attribute)."),
                          p(code("Original table"),"- This tab shows the original data. It can be filtered and arranged by multiple variables"),
-                         p(code("Standardized table"), "- This tab shows the standardized data. It can be filtered and arranged by multiple variables")
+                         p(code("Standardized table"), "- This tab shows the standardized data. It can be filtered and arranged by multiple variables"),
+                         p(""),
+                         p(""),
+                         p(""),
+                         p(a("Here", href= "https://github.com/nelson-io/supplier_benchmarking/raw/master/sample_2.xlsx"), " is a sample .xlsx file to try the app!")
                          ),
                 tabPanel("Score", plotOutput("plot_1"),
                          textOutput("subtitle"),tableOutput("test")),
