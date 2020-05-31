@@ -31,6 +31,18 @@ ui <- fluidPage(
         # Show a plot of the generated distribution
         mainPanel(
             tabsetPanel(
+                tabPanel("Introducción", 
+                         p(""),
+                         p("The goal of this app is to use data from your suppliers to estimate flexible indexes. It lets you adjust the relative importance of every feature and automatically standardize features (substracting the mean and dividing by the standard deviation of each variable) in order to make them comparable. The obtained score corresponds to the weighted sum of standardized attributes. It's open source and all the files are hosted on my github. Here is a sample .xlsx file to try the app"),
+                         h4(strong("Input file")),
+                         p("Choose a file from your system with suppliers data. \n Each column must be an attribute and the first column", strong("MUST"), " contain supplier names (or id's)."),
+                         h4(strong("Sliders")),
+                         p( "Use the automatically generated sliders to adjust the relative importance of each attribute."),
+                         h4(strong("Tabs")),
+                         p(code("Score"), "- This tab shows with a barplot the standardized scores obtained by each supplier. It also shows the weight of every variable (which depends on the relative importance of each attribute)."),
+                         p(code("Original table"),"- This tab shows the original data. It can be filtered and arranged by multiple variables"),
+                         p(code("Standardized table"), "- This tab shows the standardized data. It can be filtered and arranged by multiple variables")
+                         ),
                 tabPanel("Score", plotOutput("plot_1"),
                          textOutput("subtitle"),tableOutput("test")),
                 tabPanel("Original table", dataTableOutput("table_2")),
@@ -50,23 +62,24 @@ server <- function(input, output) {
             need(input$df, message = F)
         )
         infile <- input$df
-        import(input$df$datapath)
+        import(input$df$datapath) %>% 
+          rename(Supplier = 1)
     })
     
     data_standardized <- reactive({
         data() %>% 
-            mutate_all(~(.-mean(.))/sd(.))
+            mutate_at(vars(-Supplier),~(.-mean(.))/sd(.))
     })
     
     datanames <- reactive({
-        names(data())
+        names(data())[-1]
     })
     
     #set weights
     
     rel_imp <- reactive({
        
-       map_dbl(names(data()), ~ input[[paste0("var",.)]])
+       map_dbl(datanames(), ~ input[[paste0("var",.)]])
         # map_dbl(paste0("input$var",names(data())), get) 
     })
     
@@ -78,13 +91,13 @@ server <- function(input, output) {
     #Set Scores
     scores_vect <- reactive({
         req(weights())
-        map2_df(data_standardized(), weights(), ~ (.x*.y)) %>% 
+        map2_df(data_standardized() %>% select(-Supplier), weights(), ~ (.x*.y)) %>% 
             transmute(scores = rowSums(.)) %>% pull() 
     })
     
     #Bind Scores
     data_scored <- reactive({
-        cbind(Supplier = seq_along(scores_vect()), data_standardized(), Score = scores_vect())
+        cbind(data_standardized(), Score = scores_vect())
     })
     
     
@@ -92,7 +105,7 @@ server <- function(input, output) {
         
     #Generate sliders
     output$sliders <- renderUI({
-        pvars <- names(data())
+        pvars <- datanames()
         lapply(seq(pvars), function(i) {
             sliderInput(inputId = paste0("var", pvars[i]),
                         label = paste0("Relative importance of:", pvars[i]),
@@ -114,7 +127,7 @@ server <- function(input, output) {
             ggtitle("Standardized score by Supplier")+
             xlab("Supplier")+
             ylab("Score")+
-            geom_text(aes(label = round(Score,2), y = .5*Score), col = "white", size = 5)
+            geom_text(aes(label = round(Score,2), y = .5*Score), size = 5, fontface = 2)
     })
     
     output$test <- renderTable({
@@ -131,6 +144,16 @@ server <- function(input, output) {
     output$table_2 <- renderDataTable({
         data()
     })
+    
+    # output$intro_1 <- renderText({
+    #   
+    # })
+    # 
+    # output$intro_2 <- renderText({
+    #  
+    # })
+    # 
+    # 
 
 
     
