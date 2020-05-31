@@ -84,7 +84,7 @@ server <- function(input, output) {
     
     #Bind Scores
     data_scored <- reactive({
-        cbind(Provider = seq_along(scores_vect()), data_standardized(), Score = scores_vect())
+        cbind(Supplier = seq_along(scores_vect()), data_standardized(), Score = scores_vect())
     })
     
     
@@ -96,7 +96,7 @@ server <- function(input, output) {
         lapply(seq(pvars), function(i) {
             sliderInput(inputId = paste0("var", pvars[i]),
                         label = paste0("Relative importance of:", pvars[i]),
-                        min = 0, max = 1, value = 1)
+                        min = 1, max = 100, value = 100)
         })
 
     })
@@ -104,16 +104,17 @@ server <- function(input, output) {
 
     #Render table
     output$table_1 <- renderDataTable({
-       data_scored() %>% mutate_at(vars(-Provider),~round(.,4))
+       data_scored() %>% mutate_at(vars(-Supplier),~round(.,4))
     })
     
     output$plot_1 <- renderPlot({
-        ggplot(data_scored())+
-            geom_col(aes(x = as.factor(Provider), y = Score), fill = 'steelblue')+
+        ggplot(data_scored(),aes(x = as.factor(Supplier), y = Score))+
+            geom_col(fill = 'steelblue')+
             theme_bw()+
-            ggtitle("Standardized score by provider")+
-            xlab("Provider")+
-            ylab("Score")
+            ggtitle("Standardized score by Supplier")+
+            xlab("Supplier")+
+            ylab("Score")+
+            geom_text(aes(label = round(Score,2), y = .5*Score), col = "white", size = 5)
     })
     
     output$test <- renderTable({
