@@ -22,7 +22,7 @@ ui <- fluidPage(
         # Show a plot of the generated distribution
         mainPanel(
             tabsetPanel(
-                tabPanel("introduction", 
+                tabPanel("Introduction", 
                          p(""),
                          p("The goal of this app is to use data from your suppliers to estimate flexible indexes. It lets you adjust the relative importance of every feature and automatically standardize features (substracting the mean and dividing by the standard deviation of each variable) in order to make them comparable. The obtained score corresponds to the weighted sum of standardized attributes. It's open source and all the files are hosted on ", a("my github.", href = "https://github.com/nelson-io/supplier_benchmarking")),
                          h4(strong("Input file")),
@@ -104,7 +104,7 @@ server <- function(input, output) {
         lapply(seq(pvars), function(i) {
             sliderInput(inputId = paste0("var", pvars[i]),
                         label = paste0("Relative importance of:", pvars[i]),
-                        min = 1, max = 100, value = 100)
+                        min = 0, max = 100, value = 100)
         })
 
     })
@@ -126,7 +126,7 @@ server <- function(input, output) {
     })
     
     output$test <- renderTable({
-        table_2 <- weights() %>% t() %>% data.frame() 
+        table_2 <- weights() %>% round(digits = 3) %>% as.character() %>% t() %>% data.frame() 
         names(table_2) <- datanames()
         table_2
     })
