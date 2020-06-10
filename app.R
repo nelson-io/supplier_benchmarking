@@ -3,6 +3,7 @@ options(repos="https://CRAN.R-project.org")
 library(shiny)
 library(tidyverse)
 library(rio)
+library(DT)
 
 # Define UI for application that draws a histogram
 ui <- fluidPage(
@@ -40,9 +41,9 @@ ui <- fluidPage(
                          ),
                 tabPanel("Score", plotOutput("plot_1"),
                          textOutput("subtitle"),tableOutput("test")),
-                tabPanel("Original table", dataTableOutput("table_2")),
+                tabPanel("Original table", DT::dataTableOutput("table_2")),
                 
-                tabPanel("Standardized table", dataTableOutput("table_1"))
+                tabPanel("Standardized table", DT::dataTableOutput("table_1"))
             )
         )
     )
@@ -111,7 +112,7 @@ server <- function(input, output) {
         
 
     #Render table
-    output$table_1 <- renderDataTable({
+    output$table_1 <- DT::renderDataTable({
        data_scored() %>% mutate_at(vars(-Supplier),~round(.,4))
     })
     
@@ -136,8 +137,8 @@ server <- function(input, output) {
         "Weights"
     })
 
-    output$table_2 <- renderDataTable({
-        data()
+    output$table_2 <- DT::renderDataTable({
+        data() %>% mutate_at(vars(-Supplier),~round(.,4))
     })
     
 
